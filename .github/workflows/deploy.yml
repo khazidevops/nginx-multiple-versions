@@ -31,9 +31,12 @@ jobs:
             
             # Pull the latest changes from your repository
             git pull origin main
+
+            # Define a version tag based on the current date and time
+            version_tag=$(date +%Y%m%d%H%M%S)
             
             # Build the Docker image
-            sudo docker build -t my-nginx-versions .
+            sudo docker build -t my-nginx-versions:$version_tag .
             
             # Stop and remove any running containers with the same name
             existing_container=$(sudo docker ps -q --filter "name=my-nginx-versions")
@@ -42,6 +45,9 @@ jobs:
               sudo docker rm $existing_container
             fi
             
-            # Run the Docker container
-            sudo docker run -d -p 8080:80 --name my-nginx-versions my-nginx-versions
+            # Remove old Docker images if necessary
+            # sudo docker image prune -f
+            
+            # Run the Docker container with the new image version
+            sudo docker run -d -p 8080:80 --name my-nginx-versions my-nginx-versions:$version_tag
           EOF
