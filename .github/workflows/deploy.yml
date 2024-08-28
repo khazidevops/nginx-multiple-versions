@@ -3,7 +3,7 @@ name: Deploy to EC2
 on:
   push:
     branches:
-      - main  # or the branch you want to deploy from
+      - main  # Change to the branch you want to deploy from
 
 jobs:
   deploy:
@@ -22,12 +22,15 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
             # Navigate to your application directory
-            cd /home/ubuntu
+            cd /home/ubuntu/nginx-multiple-versions || exit
 
             # Pull the latest changes from your repository
-            git pull origin main
+            git pull origin main || exit
+
+            # Ensure Docker Compose is installed
+            docker-compose --version || exit
 
             # Build and restart your Docker container
-            docker-compose down
-            docker-compose up -d --build
+            docker-compose down || exit
+            docker-compose up -d --build || exit
           EOF
