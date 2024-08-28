@@ -33,12 +33,12 @@ jobs:
             git pull origin main || exit
 
             # Build the Docker image
-            docker build -t my-nginx-versions . || exit
+            sudo docker build -t my-nginx-versions . || exit
 
             # Stop and remove any running containers
-            docker ps -q --filter "name=my-nginx-versions" | xargs -r docker stop || exit
-            docker ps -a -q --filter "name=my-nginx-versions" | xargs -r docker rm || exit
+            sudo docker ps -q --filter "name=my-nginx-versions" | xargs -r sudo docker stop || exit
+            sudo docker ps -a -q --filter "name=my-nginx-versions" | xargs -r sudo docker rm || exit
 
             # Run the Docker container
-            docker run -d -p 8080:80 my-nginx-versions || exit
+            sudo docker run -d -p 8080:80 my-nginx-versions || exit
           EOF
