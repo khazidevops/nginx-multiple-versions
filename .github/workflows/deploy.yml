@@ -23,22 +23,25 @@ jobs:
           ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
             # Navigate to your application directory
             cd /home/ubuntu/nginx-multiple-versions || exit
-
+            
             # Clone the repository if not already cloned
             if [ ! -d ".git" ]; then
               git clone https://github.com/khazidevops/nginx-multiple-versions.git .
             fi
-
+            
             # Pull the latest changes from your repository
-            git pull origin main || exit
-
+            git pull origin main
+            
             # Build the Docker image
-            sudo docker build -t my-nginx-versions . || exit
-
-            # Stop and remove any running containers
-            sudo docker ps -q --filter "name=my-nginx-versions" | xargs -r sudo docker stop || exit
-            sudo docker ps -a -q --filter "name=my-nginx-versions" | xargs -r sudo docker rm || exit
-
+            sudo docker build -t my-nginx-versions .
+            
+            # Stop and remove any running containers with the same name
+            existing_container=$(sudo docker ps -q --filter "name=my-nginx-versions")
+            if [ ! -z "$existing_container" ]; then
+              sudo docker stop $existing_container
+              sudo docker rm $existing_container
+            fi
+            
             # Run the Docker container
-            sudo docker run -d -p 8080:80 my-nginx-versions || exit
+            sudo docker run -d -p 8080:80 --name my-nginx-versions my-nginx-versions
           EOF
