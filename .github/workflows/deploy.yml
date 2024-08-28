@@ -43,5 +43,5 @@ jobs:
             fi
             
             # Run the Docker container
-            sudo docker run -d -p 8080:80 --name my-nginx-versions my-nginx-versions
+            sudo docker run -d -p 8081:80 --name my-nginx-versions my-nginx-versions
           EOF
