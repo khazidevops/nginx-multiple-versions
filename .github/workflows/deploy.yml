@@ -1,47 +1,27 @@
-name: Deploy to EC2
-
-on:
-  push:
-    branches:
-      - main  # Change to the branch you want to deploy from
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up SSH key
-        uses: webfactory/ssh-agent@v0.7.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
-      - name: Deploy to EC2
-        run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
-            # Navigate to your application directory
-            cd /home/ubuntu/nginx-multiple-versions || exit
-            
-            # Clone the repository if not already cloned
-            if [ ! -d ".git" ]; then
-              git clone https://github.com/khazidevops/nginx-multiple-versions.git .
-            fi
-            
-            # Pull the latest changes from your repository
-            git pull origin main
-            
-            # Build the Docker image
-            sudo docker build -t my-nginx-versions .
-            
-            # Stop and remove any running containers with the same name
-            existing_container=$(sudo docker ps -q --filter "name=my-nginx-versions")
-            if [ ! -z "$existing_container" ]; then
-              sudo docker stop $existing_container
-              sudo docker rm $existing_container
-            fi
-            
-            # Run the Docker container
-            sudo docker run -d -p 8081:80 --name my-nginx-versions my-nginx-versions
-          EOF
+- name: Deploy to EC2
+run: |
+  ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+    # Navigate to your application directory
+    cd /home/ubuntu/nginx-multiple-versions || exit
+    
+    # Clone the repository if not already cloned
+    if [ ! -d ".git" ]; then
+      git clone https://github.com/khazidevops/nginx-multiple-versions.git .
+    fi
+    
+    # Pull the latest changes from your repository
+    git pull origin main
+    
+    # Build the Docker image
+    sudo docker build -t my-nginx-versions .
+    
+    # Stop and remove any existing container with the same name
+    existing_container=$(sudo docker ps -q --filter "name=my-nginx-versions")
+    if [ ! -z "$existing_container" ]; then
+      sudo docker stop $existing_container
+      sudo docker rm $existing_container
+    fi
+    
+    # Run the Docker container
+    sudo docker run -d -p 8081:80 --name my-nginx-versions my-nginx-versions
+  EOF
